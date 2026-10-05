@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>英打遊戲開發歷程</title>
+  <style>
+    [hidden] { display: none !important; }
+
+    :root {
+      font-family: system-ui, "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      /* --- 清澈湖水藍背景色盤 --- */
+      --bg-lake-start: #e0f7fa;  /* 柔和清澈湖水藍 */
+      --bg-lake-mid: #e8fbf8;    /* 水波白光 */
+      --bg-lake-end: #c8f2ee;    /* 蒂芬妮綠藍 */
+      
+      --card-bg: rgba(255, 255, 255, 0.92); /* 透亮卡片 */
+      --card-border: #d4f0ed;    /* 湖水清涼邊框 */
+      
+      --text-main: #2c4a47;      /* 深湖水綠灰文字 */
+      --text-muted: #5e8380;     /* 次要湖水文字 */
+      --eyebrow: #438f88;        /* 標籤文字色 */
+      
+      /* --- 按鈕：粉紅草莓馬卡龍色系 --- */
+      --btn-bg-start: #ffdae9;   /* 柔粉草莓 */
+      --btn-bg-end: #ffc9e0;     /* 深一點的柔粉 */
+      --btn-text: #8a576f;       /* 深莓果色文字 */
+      --btn-shadow: rgba(255, 182, 193, 0.5);
+      
+      --btn-sec-bg: #f0faf8;     /* 次要按鈕 */
+      --btn-sec-text: #376e67;
+      --btn-sec-border: #bce3df;
+
+      --focus-ring: #ffb6c1;     /* 焦點外框粉色 */
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, var(--bg-lake-start) 0%, var(--bg-lake-mid) 50%, var(--bg-lake-end) 100%);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 36px 20px;
+    }
+
+    main {
+      max-width: 1040px;
+      width: 100%;
+      margin: auto;
+    }
+
+    .eyebrow {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--eyebrow);
+      margin: 0 0 4px 0;
+    }
+
+    h1 {
+      font-size: clamp(30px, 5vw, 44px);
+      line-height: 1.3;
+      margin: 0 0 8px 0;
+      color: var(--text-main);
+      font-weight: 800;
+    }
+
+    p { margin: 8px 0 16px 0; font-size: 16px; }
+
+    /* 卡片區塊 Grid 配置 */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 2px solid var(--card-border);
+      border-radius: 24px;
+      padding: 24px;
+      min-height: 250px;
+      box-shadow: 
+        0 10px 24px rgba(45, 110, 103, 0.05),
+        0 4px 10px rgba(45, 110, 103, 0.02);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 30px rgba(45, 110, 103, 0.08);
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--eyebrow);
+      letter-spacing: 0.08em;
+    }
+
+    .card h2 {
+      font-size: 22px;
+      margin: 6px 0 10px 0;
+      color: var(--text-main);
+    }
+
+    .card p {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0 0 20px 0;
+    }
+
+    /* 按鈕樣式 (連結型態) */
+    .action, button {
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      display: inline-block;
+      text-align: center;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(145deg, var(--btn-bg-start), var(--btn-bg-end));
+      color: var(--btn-text);
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 5px 14px var(--btn-shadow);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      top: 0;
+    }
+
+    .action:hover:not([aria-disabled="true"]), button:hover:not(:disabled) {
+      top: -2px;
+      filter: brightness(1.02);
+      box-shadow: 0 8px 20px var(--btn-shadow);
+    }
+
+    .action[aria-disabled="true"] {
+      background: #e4f2f0;
+      color: #92b5b0;
+      box-shadow: none;
+      cursor: not-allowed;
+      border: 1px solid #cce8e4;
+    }
+
+    /* 設定面板 (Details/Summary) */
+    details {
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-top: 30px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text-main);
+      font-size: 16px;
+    }
+
+    form { margin-top: 16px; }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 12px;
+      color: var(--text-main);
+    }
+
+    input[type=url] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #bce3df;
+      border-radius: 12px;
+      margin: 6px 0 14px 0;
+      font-size: 15px;
+      background: #fbfefd;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type=url]:focus {
+      border-color: #ffb6c1;
+    }
+
+    #message {
+      min-height: 2em;
+      margin-top: 16px;
+      font-weight: 700;
+      color: #3b6e68;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 4px;
+    }
+
+    @media (max-width: 700px) {
+      main { padding: 22px 14px; }
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: 190px; }
+    }
+  </style>
+</head>
+<body>
+
+<main>
+  <p class="eyebrow">MY TYPING JOURNEY</p>
+  <h1>英打遊戲開發歷程</h1>
+  <p>從第一個頁面開始，記錄每一次完成的小進步。</p>
+
+  <div class="cards">
+    <article class="card">
+      <span class="badge">VERSION 01</span>
+      <h2>版本 1</h2>
+      <p>一個標題、一個按鈕。我的第一次網站部署。</p>
+      <a class="action" href="#" id="link1" aria-disabled="true" target="_blank" rel="noopener">先設定網站網址</a>
+    </article>
+
+    <article class="card">
+      <span class="badge">VERSION 02</span>
+      <h2>版本 2</h2>
+      <p>加入外部圖片與聲音，讓遊戲預告有了聲音。</p>
+      <a class="action" href="#" id="link2" aria-disabled="true" target="_blank" rel="noopener">先設定網站網址</a>
+    </article>
+
+    <article class="card">
+      <span class="badge">VERSION 03</span>
+      <h2>版本 3</h2>
+      <p>左手 ASDF 打字練習。</p>
+      <a class="action" href="v3/index.html">開始練習</a>
+    </article>
+
+    <article class="card">
+      <span class="badge">VERSION 04</span>
+      <h2>版本 4</h2>
+      <p>十個按鍵，接住從天空落下的字母。</p>
+      <a class="action" href="v4/index.html">開始練習</a>
+    </article>
+  </div>
+
+  <p id="message" role="status"></p>
+
+  <details id="config">
+    <summary>首次設定：填入版本一、版本二的網址</summary>
+    <p style="font-size: 14px; color: var(--text-muted);">
+      這兩個版本是不同 repo 的網站。設定後會自動下載新的首頁檔案；請用它取代原本的 index.html 再上傳至 GitHub。
+    </p>
+    <form id="settings">
+      <label for="url1">版本一的網站網址</label>
+      <input id="url1" type="url" placeholder="https://你的帳號.github.io/typing-v1/" required>
+      
+      <label for="url2">版本二的網站網址</label>
+      <input id="url2" type="url" placeholder="https://你的帳號.github.io/typing-v2/" required>
+      
+      <button type="submit" style="margin-top: 10px;">套用網址並下載 index.html</button>
+    </form>
+  </details>
+</main>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function validWebsite(value) {
+    let url;
+    try {
+      url = new URL(value.trim());
+    } catch {
+      throw new Error('請貼完整的 https:// 網站網址。');
+    }
+    if (url.protocol !== 'https:' || !url.hostname.endsWith('.github.io') || url.username || url.password) {
+      throw new Error('請貼 GitHub Pages 網站網址（https://帳號.github.io/專案/），不要貼 github.com 的 repo 網址。');
+    }
+    return url.href;
+  }
+
+  for (const id of ['link1', 'link2']) {
+    $(id).addEventListener('click', e => {
+      if ($(id).getAttribute('aria-disabled') === 'true') {
+        e.preventDefault();
+        $('config').open = true;
+        $('message').textContent = '請先在下方填入自己的版本一與版本二網站網址。';
+      }
+    });
+  }
+
+  $('settings').addEventListener('submit', e => {
+    e.preventDefault();
+    try {
+      const urls = [validWebsite($('url1').value), validWebsite($('url2').value)];
+      if (urls[0] === urls[1]) throw new Error('兩個版本應填不同的網站網址。');
+
+      urls.forEach((url, i) => {
+        const link = $('link' + (i + 1));
+        link.setAttribute('href', url);
+        link.removeAttribute('aria-disabled');
+        link.textContent = '開啟版本 ' + (i + 1);
+        $('url' + (i + 1)).setAttribute('value', url);
+      });
+
+      $('message').textContent = '已套用！請把下載的 index.html 放回這個入口網站資料夾並取代原檔，再上傳 GitHub。';
+      $('config').open = false;
+
+      const blob = new Blob(['<!doctype html>\n' + document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    } catch (err) {
+      $('message').textContent = err.message;
+    }
+  });
+</script>
+
+</body>
+</html>
