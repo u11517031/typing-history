@@ -27,10 +27,6 @@
       --btn-bg-end: #ffc9e0;     /* 深一點的柔粉 */
       --btn-text: #8a576f;       /* 深莓果色文字 */
       --btn-shadow: rgba(255, 182, 193, 0.5);
-      
-      --btn-sec-bg: #f0faf8;     /* 次要按鈕 */
-      --btn-sec-text: #376e67;
-      --btn-sec-border: #bce3df;
 
       --focus-ring: #ffb6c1;     /* 焦點外框粉色 */
     }
@@ -123,7 +119,7 @@
     }
 
     /* 按鈕樣式 (連結型態) */
-    .action, button {
+    .action {
       font: inherit;
       font-size: 15px;
       font-weight: 700;
@@ -142,68 +138,10 @@
       top: 0;
     }
 
-    .action:hover:not([aria-disabled="true"]), button:hover:not(:disabled) {
+    .action:hover {
       top: -2px;
       filter: brightness(1.02);
       box-shadow: 0 8px 20px var(--btn-shadow);
-    }
-
-    .action[aria-disabled="true"] {
-      background: #e4f2f0;
-      color: #92b5b0;
-      box-shadow: none;
-      cursor: not-allowed;
-      border: 1px solid #cce8e4;
-    }
-
-    /* 設定面板 (Details/Summary) */
-    details {
-      background: rgba(255, 255, 255, 0.85);
-      border: 2px solid var(--card-border);
-      border-radius: 20px;
-      padding: 20px 24px;
-      margin-top: 30px;
-    }
-
-    summary {
-      cursor: pointer;
-      font-weight: 700;
-      color: var(--text-main);
-      font-size: 16px;
-    }
-
-    form { margin-top: 16px; }
-
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-top: 12px;
-      color: var(--text-main);
-    }
-
-    input[type=url] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #bce3df;
-      border-radius: 12px;
-      margin: 6px 0 14px 0;
-      font-size: 15px;
-      background: #fbfefd;
-      color: var(--text-main);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type=url]:focus {
-      border-color: #ffb6c1;
-    }
-
-    #message {
-      min-height: 2em;
-      margin-top: 16px;
-      font-weight: 700;
-      color: #3b6e68;
     }
 
     :focus-visible {
@@ -230,14 +168,14 @@
       <span class="badge">VERSION 01</span>
       <h2>版本 1</h2>
       <p>一個標題、一個按鈕。我的第一次網站部署。</p>
-      <a class="action" href="#" id="link1" aria-disabled="true" target="_blank" rel="noopener">先設定網站網址</a>
+      <a class="action" href="v1/index.html">開啟版本 1</a>
     </article>
 
     <article class="card">
       <span class="badge">VERSION 02</span>
       <h2>版本 2</h2>
       <p>加入外部圖片與聲音，讓遊戲預告有了聲音。</p>
-      <a class="action" href="#" id="link2" aria-disabled="true" target="_blank" rel="noopener">先設定網站網址</a>
+      <a class="action" href="v2/index.html">開啟版本 2</a>
     </article>
 
     <article class="card">
@@ -254,82 +192,7 @@
       <a class="action" href="v4/index.html">開始練習</a>
     </article>
   </div>
-
-  <p id="message" role="status"></p>
-
-  <details id="config">
-    <summary>首次設定：填入版本一、版本二的網址</summary>
-    <p style="font-size: 14px; color: var(--text-muted);">
-      這兩個版本是不同 repo 的網站。設定後會自動下載新的首頁檔案；請用它取代原本的 index.html 再上傳至 GitHub。
-    </p>
-    <form id="settings">
-      <label for="url1">版本一的網站網址</label>
-      <input id="url1" type="url" placeholder="https://你的帳號.github.io/typing-v1/" required>
-      
-      <label for="url2">版本二的網站網址</label>
-      <input id="url2" type="url" placeholder="https://你的帳號.github.io/typing-v2/" required>
-      
-      <button type="submit" style="margin-top: 10px;">套用網址並下載 index.html</button>
-    </form>
-  </details>
 </main>
-
-<script>
-  const $ = id => document.getElementById(id);
-
-  function validWebsite(value) {
-    let url;
-    try {
-      url = new URL(value.trim());
-    } catch {
-      throw new Error('請貼完整的 https:// 網站網址。');
-    }
-    if (url.protocol !== 'https:' || !url.hostname.endsWith('.github.io') || url.username || url.password) {
-      throw new Error('請貼 GitHub Pages 網站網址（https://帳號.github.io/專案/），不要貼 github.com 的 repo 網址。');
-    }
-    return url.href;
-  }
-
-  for (const id of ['link1', 'link2']) {
-    $(id).addEventListener('click', e => {
-      if ($(id).getAttribute('aria-disabled') === 'true') {
-        e.preventDefault();
-        $('config').open = true;
-        $('message').textContent = '請先在下方填入自己的版本一與版本二網站網址。';
-      }
-    });
-  }
-
-  $('settings').addEventListener('submit', e => {
-    e.preventDefault();
-    try {
-      const urls = [validWebsite($('url1').value), validWebsite($('url2').value)];
-      if (urls[0] === urls[1]) throw new Error('兩個版本應填不同的網站網址。');
-
-      urls.forEach((url, i) => {
-        const link = $('link' + (i + 1));
-        link.setAttribute('href', url);
-        link.removeAttribute('aria-disabled');
-        link.textContent = '開啟版本 ' + (i + 1);
-        $('url' + (i + 1)).setAttribute('value', url);
-      });
-
-      $('message').textContent = '已套用！請把下載的 index.html 放回這個入口網站資料夾並取代原檔，再上傳 GitHub。';
-      $('config').open = false;
-
-      const blob = new Blob(['<!doctype html>\n' + document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'index.html';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-    } catch (err) {
-      $('message').textContent = err.message;
-    }
-  });
-</script>
 
 </body>
 </html>
